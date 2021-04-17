@@ -1,6 +1,6 @@
 # XMLHttpRequest Deno Polyfill
 
-A polyfill of XMLHttpRequest for Deno (and other browser and browser-like environments) by browserifying [@driverdan/node-XMLHttpRequest](https://github.com/driverdan/node-XMLHttpRequest).
+A **buggy** polyfill of XMLHttpRequest for Deno (and other browser and browser-like environments) by browserifying [@driverdan/node-XMLHttpRequest](https://github.com/driverdan/node-XMLHttpRequest).
 
 ```js
 import XMLHttpRequest from "https://deno.land/x/xmlhttprequest_deno@v0.0.1/mod.js";
@@ -15,3 +15,9 @@ xhr.onreadystatechange = function() {
 xhr.open("GET", "https://example.com", true);
 xhr.send();
 ```
+
+# TODO
+
+* Fix the major bugs mentioned here:
+  * https://github.com/driverdan/node-XMLHttpRequest/issues
+  * https://github.com/driverdan/node-XMLHttpRequest/pulls
