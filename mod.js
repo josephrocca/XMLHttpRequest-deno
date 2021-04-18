@@ -3643,8 +3643,12 @@ http.request = function (opts, cb) {
 	// Normally, the page is loaded from http or https, so not specifying a protocol
 	// will result in a (valid) protocol-relative url. However, this won't work if
 	// the protocol is something else, like 'file:'
-	// var defaultProtocol = global.location.protocol.search(/^https?:$/) === -1 ? 'http:' : ''
-  var defaultProtocol = ""; // EDIT: commented out the above line because otherwise deno requires --location input
+
+  // EDIT: added this try-catch because because deno crashes on .location access without --location input
+	var defaultProtocol = "";
+  try {
+    defaultProtocol = global.location.protocol.search(/^https?:$/) === -1 ? 'http:' : ''
+  } catch(e) {}
 
 	var protocol = opts.protocol || defaultProtocol
 	var host = opts.hostname || opts.host
@@ -4176,11 +4180,13 @@ var IncomingMessage = exports.IncomingMessage = function (xhr, response, mode, r
 			self.rawHeaders.push(key, header)
 		})
 
+    self.___uint8ArrayChunks = []; // EDIT(hf83geka02yrg): we need this since the @dandriver/node-xmlhttprequest module didn't support arraybuffer output
 		if (capability.writableStream) {
 			var writable = new WritableStream({
 				write: function (chunk) {
 					resetTimers(false)
 					return new Promise(function (resolve, reject) {
+            self.___uint8ArrayChunks.push(chunk); // ctrl+f: hf83geka02yrg for explanation
 						if (self._destroyed) {
 							reject()
 						} else if(self.push(Buffer.from(chunk))) {
@@ -4941,7 +4947,6 @@ function readableAddChunk(stream, chunk, encoding, addToFront, skipChunkCheck) {
         state.reading = false;
 
         if (state.decoder && !encoding) {
-          debugger;
           chunk = state.decoder.write(chunk);
           if (state.objectMode || chunk.length !== 0) addChunk(stream, state, chunk, false);else maybeReadMore(stream, state);
         } else {
@@ -4967,7 +4972,6 @@ function addChunk(stream, state, chunk, addToFront) {
   } else {
     // update the buffer info.
     state.length += state.objectMode ? 1 : chunk.length;
-    debugger;
     if (addToFront) state.buffer.unshift(chunk);else state.buffer.push(chunk);
     if (state.needReadable) emitReadable(stream);
   }
@@ -9082,6 +9086,21 @@ exports.XMLHttpRequest = function () {
 
         response.on("end", function () {
           if (sendFlag) {
+            
+            if(self.responseType === "arraybuffer") {
+              // ctrl+f: hf83geka02yrg for where we create ___uint8ArrayChunks
+              let length = response.___uint8ArrayChunks.map(c => c.length).reduce((a,v) => a+v, 0);
+              let data = new Uint8Array(length);
+              let l = 0;
+              for(let chunk of response.___uint8ArrayChunks) {
+                data.set(chunk, l);
+                l += chunk.length;
+              }
+              self.response = data.buffer;
+              delete response.___uint8ArrayChunks;
+              delete self.responseText;
+            }
+
             // Discard the end event if the connection has been aborted
             setState(self.DONE);
             sendFlag = false;
