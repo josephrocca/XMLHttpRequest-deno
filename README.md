@@ -1,4 +1,4 @@
-**Note:** @kitsonk (a core Deno dev) has published a TypeScript `XMLHttpRequest` polyfill that may or may not suit your purposes better: https://github.com/kitsonk/xhr It seems to be ~actively maintained, unlike this repo, and you could strip types from it fairly easily if you need a pure JS module.
+**Note:** @kitsonk (a core Deno dev) has published a TypeScript `XMLHttpRequest` polyfill that may or may not suit your purposes better: https://deno.land/x/xhr@0.2.1 It seems to be ~actively maintained, unlike this repo, and you could strip types from it fairly easily if you need a pure JS module.
 
 ---
 
